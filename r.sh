@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [[ "$1" == "clean" ]]; then
-    rm -f {bachelor,master}-thesis.{bib,aux,log,bbl,bcf,blg,run.xml,toc,tct,pdf,out}
+    rm -f {bachelor,master}-thesis.{aux,log,bbl,bcf,blg,run.xml,toc,tct,pdf,out}
 else
     for i in bachelor ; do
         xelatex $i-thesis
@@ -10,7 +10,7 @@ else
         xelatex $i-thesis
     done
 
-    rm -f bachelor-thesis.{bib,aux,log,bbl,bcf,blg,run.xml,toc,tct,out}
+    rm -f bachelor-thesis.{aux,log,bbl,bcf,blg,run.xml,toc,tct,out}
 
     opera bachelor-thesis.pdf
 fi
