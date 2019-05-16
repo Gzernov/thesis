@@ -12,5 +12,5 @@ else
 
     rm -f bachelor-thesis.{aux,log,bbl,bcf,blg,run.xml,toc,tct,out}
 
-    opera bachelor-thesis.pdf
+    waterfox bachelor-thesis.pdf
 fi
