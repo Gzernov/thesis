@@ -207,7 +207,7 @@
 \RequirePackage[
     backend=biber,
     bibencoding=utf8,
-    sorting=nyt,
+    sorting=none,
     sortcites=true,
     bibstyle=gost-numeric,
     citestyle=numeric-comp,
@@ -789,6 +789,7 @@
         \pagebreak[3]
         \noindent \textbf{5 Перечень графического материала (с указанием обязательного материала)}\par \theplannedgraphics\par
         \pagebreak[3]
+        \filbreak
         \noindent \textbf{6 Исходные материалы и пособия}\par \theplannedsources\par
         \pagebreak[3]
         \noindent \textbf{7 Дата выдачи задания} \thestartdate\par\bigskip\par
