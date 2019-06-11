@@ -1,5 +1,5 @@
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{itmo-student-thesis}[2019/05/28 v1.3.b6]
+\ProvidesClass{itmo-student-thesis}[2019/06/06 v1.4]
 \RequirePackage{xkvltxp}
 \LoadClass[14pt,a4paper]{extreport}
 
@@ -8,6 +8,9 @@
 \newif\if@shouldusexelatex
 \newif\if@shouldmakespecification
 \newif\if@shouldmakeannotation
+\newif\if@shouldmaketitlepage@ru
+\newif\if@shouldmakespecification@ru
+\newif\if@shouldmakeannotation@ru
 
 \newcommand{\@babeloptions}{english,russian}
 
@@ -16,6 +19,9 @@
 \DeclareOptionX{times}{\@shouldusexelatextrue}
 \DeclareOptionX{specification}{\@shouldmakespecificationtrue}
 \DeclareOptionX{annotation}{\@shouldmakeannotationtrue}
+\DeclareOptionX{specification-extra-ru}{\@shouldmakespecification@rutrue}
+\DeclareOptionX{annotation-extra-ru}{\@shouldmakeannotation@rutrue}
+\DeclareOptionX{titlepage-extra-ru}{\@shouldmaketitlepage@rutrue}
 \DeclareOptionX{languages}{\renewcommand{\@babeloptions}{#1}}
 
 \ProcessOptionsX\relax
@@ -34,6 +40,7 @@
 
 \RequirePackage[\@babeloptions]{babel}
 \RequirePackage{csquotes}
+\RequirePackage{iflang}
 
 %% Формируем отступы
 
@@ -110,6 +117,8 @@
 \renewcommand\labelenumii{\arabic{enumii})}
 \renewcommand\theenumii{\arabic{enumii}}
 
+\newcommand{\@iflfe}[2]{#1}
+
 \newcommand*{\@tablecontinuation}[1]{Table~#1, continued}
 \newcommand*{\@chaptername}{CHAPTER}
 \newcommand*{\@introductionname}{INTRODUCTION}
@@ -134,6 +143,7 @@
 \newcommand*{\@theorem@example}{Example}
 
 \addto{\captionsenglish}{%
+\renewcommand{\@iflfe}[2]{#1}%
 \renewcommand*{\figurename}{Figure}%
 \renewcommand*{\contentsname}{Contents}%
 \renewcommand*{\labelenumi}{\alph{enumi})}%
@@ -162,6 +172,7 @@
 }
 
 \addto{\captionsrussian}{%
+\renewcommand{\@iflfe}[2]{#2}%
 \renewcommand*{\figurename}{Рисунок}%
 \renewcommand*{\contentsname}{Содержание}%
 \renewcommand*{\labelenumi}{\asbukx{enumi})}%
@@ -207,7 +218,7 @@
 \RequirePackage[
     backend=biber,
     bibencoding=utf8,
-    sorting=none,
+    sorting=nyt,
     sortcites=true,
     bibstyle=gost-numeric,
     citestyle=numeric-comp,
@@ -494,7 +505,8 @@
 \newcommand{\foreignsourcesfiveyears}{\total{c@foreignsourcesfiveyears}}
 \newcommand{\foreignsourcestenyears}{\total{c@foreignsourcestenyears}}
 \newcommand{\foreignsourcesveryold}{\total{c@foreignsourcesveryold}}
-\newcommand{\internetsources}{\ifthenelse{\equal{\totvalue{c@internetsources}}{0}}{нет}{да, число ресурсов: \total{c@internetsources}}}
+\newcommand{\internetsources}{\@iflfe{\ifthenelse{\equal{\totvalue{c@internetsources}}{0}}{none}{yes, \total{c@internetsources} resource(s)}}
+                                     {\ifthenelse{\equal{\totvalue{c@internetsources}}{0}}{нет}{да, число ресурсов: \total{c@internetsources}}}}
 
 %%% Команды для начала и конца секции с обзором
 \newcommand{\startrelatedwork}{\newrefsegment}
@@ -621,238 +633,547 @@
 
 \newcommand{\uhspace}[1]{\uline{\hspace{#1}}}
 \newcommand{\signatureplace}{\uhspace{7em}}
-\newcommand{\datequoteplace}{<<\uhspace{5ex}>>}
+\newcommand{\datequoteplace}{\@iflfe{``\uhspace{5ex}''}{<<\uhspace{5ex}>>}}
 \newcommand{\infiniteuhspace}{\uhspace{0 cm plus 1fill}}
-\newcommand{\unknowndate}{\datequoteplace~\uhspace{13ex}~20\uhspace{3ex}~г.}
+\newcommand{\unknowndate}{\datequoteplace~\uhspace{13ex}~20\uhspace{3ex}\@iflfe{~}{~г.}}
 
 %% Контентные команды со значениями по умолчанию
 
-\newcommand{\theuniversity}{{\small\bfseries Министерство науки и высшего образования Российской Федерации\par
+%%% \university
+
+\newcommand{\theuniversity@ru}{{\small\bfseries Министерство науки и высшего образования Российской Федерации\par
 \MakeUppercase{\scriptsize федеральное государственное автономное образовательное учреждение высшего образования}\par
 \begin{singlespace}\MakeUppercase{<<Санкт-Петербургский национальный исследовательский университет информационных технологий,}\par\MakeUppercase{механики и оптики>>}\end{singlespace}}}
-\newcommand{\university}[1]{\renewcommand{\theuniversity}{#1}}
 
-\newcommand{\thedegreehost}{Университет ИТМО}
-\newcommand{\degreehost}[1]{\renewcommand{\thedegreehost}{#1}}
+\newcommand{\theuniversity@en}{{\small\bfseries Ministry of Science and Higher Education\par
+\MakeUppercase{\scriptsize federal state autonomous educational institution of higher education}\par
+\begin{singlespace}\MakeUppercase{``Saint Petersburg National Research University of Information Technologies,}\par\MakeUppercase{Mechanics and Optics''}\end{singlespace}}}
 
-\newcommand{\thefaculty}{ИТиП}
-\newcommand{\faculty}[1]{\renewcommand{\thefaculty}{#1}}
+\newcommand{\theuniversity}{\@iflfe{\theuniversity@en}{\theuniversity@ru}}
+\newcommand{\university}[1]{\@iflfe{\renewcommand{\theuniversity@en}{#1}}{\renewcommand{\theuniversity@ru}{#1}}}
 
-\newcommand{\specialty}[1]{\newcommand{\thespecialty}{#1}}
+%%% \degreehost
 
-\newcommand{\specialization}[1]{\newcommand{\thespecialization}{#1}}
+\newcommand{\thedegreehost@ru}{Университет ИТМО}
+\newcommand{\thedegreehost@en}{ITMO University}
+\newcommand{\thedegreehost}{\@iflfe{\thedegreehost@en}{\thedegreehost@ru}}
+\newcommand{\degreehost}[1]{\@iflfe{\renewcommand{\thedegreehost@en}{#1}}{\renewcommand{\thedegreehost@ru}{#1}}}
 
-\newcommand{\theprogramhead}{Парфенов В.Г.}
-\newcommand{\theprogramheaddegree}{проф., д.т.н.}
-\newcommand{\programhead}[2]{\renewcommand{\theprogramhead}{#1}
-                             \renewcommand{\theprogramheaddegree}{#2}}
+%%% \faculty
 
-\newcommand{\thecity}{Санкт-Петербург}
-\newcommand{\city}[1]{\renewcommand{\thecity}{#1}}
+\newcommand{\thefaculty@ru}{ИТиП}
+\newcommand{\thefaculty@en}{IT\&P}
+\newcommand{\thefaculty}{\@iflfe{\thefaculty@en}{\thefaculty@ru}}
+\newcommand{\faculty}[1]{\@iflfe{\renewcommand{\thefaculty@en}{#1}}{\renewcommand{\thefaculty@ru}{#1}}}
+
+%%% \specialty
+
+\newcommand{\specialty}[1]{\@iflfe{\newcommand{\thespecialty@en}{#1}}{\newcommand{\thespecialty@ru}{#1}}}
+\newcommand{\thespecialty}{\@iflfe{\thespecialty@en}{\thespecialty@ru}}
+
+%%% \specialization
+
+\newcommand{\specialization}[1]{\@iflfe{\newcommand{\thespecialization@en}{#1}}{\newcommand{\thespecialization@ru}{#1}}}
+\newcommand{\thespecialization}{\@iflfe{\thespecialization@en}{\thespecialization@ru}}
+
+%%% \programhead
+
+\newcommand{\theprogramhead@ru}{Парфенов В.Г.}
+\newcommand{\theprogramhead@en}{Parfenov V.G.}
+\newcommand{\theprogramhead}{\@iflfe{\theprogramhead@en}{\theprogramhead@ru}}
+
+\newcommand{\theprogramheaddegree@ru}{проф., д.т.н.}
+\newcommand{\theprogramheaddegree@en}{prof., doct.}
+\newcommand{\theprogramheaddegree}{\@iflfe{\theprogramheaddegree@en}{\theprogramheaddegree@ru}}
+
+\newcommand{\programhead}[2]{\@iflfe{\renewcommand{\theprogramhead@en}{#1}\renewcommand{\theprogramheaddegree@en}{#2}}
+                                    {\renewcommand{\theprogramhead@ru}{#1}\renewcommand{\theprogramheaddegree@ru}{#2}}}
+
+%%% \city
+
+\newcommand{\thecity@ru}{Санкт-Петербург}
+\newcommand{\thecity@en}{Saint Petersburg}
+\newcommand{\thecity}{\@iflfe{\thecity@en}{\thecity@ru}}
+\newcommand{\city}[1]{\@iflfe{\renewcommand{\thecity@en}{#1}}{\renewcommand{\thecity@ru}{#1}}}
 
 %%% Перечень графического материала
-\newcommand{\theplannedgraphics}{Графические материалы и чертежи работой не предусмотрены}
-\newcommand{\plannedgraphics}[1]{\renewcommand{\theplannedgraphics}{#1}}
+
+\newcommand{\theplannedgraphics@ru}{Графические материалы и чертежи работой не предусмотрены}
+\newcommand{\theplannedgraphics@en}{Supplementary materials and blueprints not required}
+\newcommand{\theplannedgraphics}{\@iflfe{\theplannedgraphics@en}{\theplannedgraphics@ru}}
+\newcommand{\plannedgraphics}[1]{\@iflfe{\renewcommand{\theplannedgraphics@en}{#1}}{\renewcommand{\theplannedgraphics@ru}{#1}}}
 
 %%% Даты
+\newcommand{\@localizeddate@ru}[3]{<<#1>>~#2~#3~г.}
+\newcommand{\@localizeddate@en}[3]{``#1''~#2~#3}
+\newcommand{\@localizeddate}[3]{\@iflfe{\@localizeddate@en{#1}{#2}{#3}}{\@localizeddate@ru{#1}{#2}{#3}}}
+
 \newcommand{\thestartdate}{\unknowndate}
-\newcommand{\startdate}[3]{\renewcommand{\thestartdate}{<<#1>>~#2~#3~г.}}
+\newcommand{\startdate}[3]{\renewcommand{\thestartdate}{\@localizeddate{#1}{#2}{#3}}}
 \newcommand{\thefinishdate}{\unknowndate}
-\newcommand{\finishdate}[3]{\renewcommand{\thefinishdate}{<<#1>>~#2~#3~г.}}
+\newcommand{\finishdate}[3]{\renewcommand{\thefinishdate}{\@localizeddate{#1}{#2}{#3}}}
 \newcommand{\thedefencedate}{\unknowndate}
-\newcommand{\defencedate}[3]{\renewcommand{\thedefencedate}{<<#1>>~#2~#3~г.}}
+\newcommand{\defencedate}[3]{\renewcommand{\thedefencedate}{\@localizeddate{#1}{#2}{#3}}}
 
 %% Контентные команды без значений по умолчанию
 
 \newcommand{\studygroup}[1]{\newcommand{\thestudygroup}{#1}}
-\renewcommand{\title}[1]{\newcommand{\thetitle}{#1}}
-\renewcommand{\author}[2]{\providecommand{\theauthor}{~}  % some distributions have it, some not
-                          \renewcommand{\theauthor}{#1}
-                          \newcommand{\theauthorshort}{#2}}
-\newcommand{\supervisor}[4]{\newcommand{\thesupervisor}{#1}
-                            \newcommand{\thesupervisorshort}{#2}
-                            \newcommand{\thesupervisordegree}{#3}
-                            \newcommand{\thesupervisorwork}{#4}}
+
+%%% \title
+
+\newcommand{\thetitle}{\@iflfe{\thetitle@en}{\thetitle@ru}}
+\renewcommand{\title}[1]{\@iflfe{\newcommand{\thetitle@en}{#1}}{\newcommand{\thetitle@ru}{#1}}}
+
+%%% \author
+
+\providecommand{\theauthor}{~} % some distributions have it, some not
+\renewcommand{\theauthor}{\@iflfe{\theauthor@en}{\theauthor@ru}}
+\newcommand{\theauthorshort}{\@iflfe{\theauthorshort@en}{\theauthorshort@ru}}
+
+\renewcommand{\author}[2]{\@iflfe{\newcommand{\theauthor@en}{#1}\newcommand{\theauthorshort@en}{#2}}
+                                 {\newcommand{\theauthor@ru}{#1}\newcommand{\theauthorshort@ru}{#2}}}
+
+%%% \supervisor
+
+\newcommand{\thesupervisor}{\@iflfe{\thesupervisor@en}{\thesupervisor@ru}}
+\newcommand{\thesupervisorshort}{\@iflfe{\thesupervisorshort@en}{\thesupervisorshort@ru}}
+\newcommand{\thesupervisordegree}{\@iflfe{\thesupervisordegree@en}{\thesupervisordegree@ru}}
+\newcommand{\thesupervisorwork}{\@iflfe{\thesupervisorwork@en}{\thesupervisorwork@ru}}
+
+\newcommand{\supervisor}[4]{\@iflfe{\newcommand{\thesupervisor@en}{#1}\newcommand{\thesupervisorshort@en}{#2}\newcommand{\thesupervisordegree@en}{#3}\newcommand{\thesupervisorwork@en}{#4}}
+                                   {\newcommand{\thesupervisor@ru}{#1}\newcommand{\thesupervisorshort@ru}{#2}\newcommand{\thesupervisordegree@ru}{#3}\newcommand{\thesupervisorwork@ru}{#4}}}
+
+%%% \secretary
+
+\newcommand{\thesecretary}{\@iflfe{\thesecretary@en}{\thesecretary@ru}}
+\newcommand{\secretary}[1]{\@iflfe{\newcommand{\thesecretary@en}{#1}}{\newcommand{\thesecretary@ru}{#1}}}
+
+%%% \publishyear
+
 \newcommand{\publishyear}[1]{\newcommand{\theyear}{#1}}
-\newcommand{\secretary}[1]{\newcommand{\thesecretary}{#1}}
 
 %%% Техническое задание и исходные данные к работе
-\newcommand{\technicalspec}[1]{\newcommand{\thetechnicalspec}{#1}}
+
+\newcommand{\thetechnicalspec}{\@iflfe{\thetechnicalspec@en}{\thetechnicalspec@ru}}
+\newcommand{\technicalspec}[1]{\@iflfe{\newcommand{\thetechnicalspec@en}{#1}}{\newcommand{\thetechnicalspec@ru}{#1}}}
+
 %%% Содержание работы
-\newcommand{\plannedcontents}[1]{\newcommand{\theplannedcontents}{#1}}
+
+\newcommand{\theplannedcontents}{\@iflfe{\theplannedcontents@en}{\theplannedcontents@ru}}
+\newcommand{\plannedcontents}[1]{\@iflfe{\newcommand{\theplannedcontents@en}{#1}}{\newcommand{\theplannedcontents@ru}{#1}}}
+
 %%% Исходные материалы и пособия
-\newcommand{\plannedsources}[1]{\newcommand{\theplannedsources}{#1}}
+
+\newcommand{\theplannedsources}{\@iflfe{\theplannedsources@en}{\theplannedsources@ru}}
+\newcommand{\plannedsources}[1]{\@iflfe{\newcommand{\theplannedsources@en}{#1}}{\newcommand{\theplannedsources@ru}{#1}}}
+
 %%% Цель исследования
-\newcommand{\researchaim}[1]{\newcommand{\theresearchaim}{#1}}
+
+\newcommand{\theresearchaim}{\@iflfe{\theresearchaim@en}{\theresearchaim@ru}}
+\newcommand{\researchaim}[1]{\@iflfe{\newcommand{\theresearchaim@en}{#1}}{\newcommand{\theresearchaim@ru}{#1}}}
+
 %%% Задачи, решаемые в ВКР
-\newcommand{\researchtargets}[1]{\newcommand{\theresearchtargets}{#1}}
+
+\newcommand{\theresearchtargets}{\@iflfe{\theresearchtargets@en}{\theresearchtargets@ru}}
+\newcommand{\researchtargets}[1]{\@iflfe{\newcommand{\theresearchtargets@en}{#1}}{\newcommand{\theresearchtargets@ru}{#1}}}
+
 %%% Краткая характеристика полученных результатов
-\newcommand{\researchsummary}[1]{\newcommand{\theresearchsummary}{#1}}
+
+\newcommand{\theresearchsummary}{\@iflfe{\theresearchsummary@en}{\theresearchsummary@ru}}
+\newcommand{\researchsummary}[1]{\@iflfe{\newcommand{\theresearchsummary@en}{#1}}{\newcommand{\theresearchsummary@ru}{#1}}}
+
 %%% Гранты, полученные при выполнении работы
-\newcommand{\researchfunding}[1]{\newcommand{\theresearchfunding}{#1}}
+
+\newcommand{\theresearchfunding}{\@iflfe{\theresearchfunding@en}{\theresearchfunding@ru}}
+\newcommand{\researchfunding}[1]{\@iflfe{\newcommand{\theresearchfunding@en}{#1}}{\newcommand{\theresearchfunding@ru}{#1}}}
+
 %%% Наличие публикаций и выступлений на конференциях
-\newcommand{\researchpublications}[1]{\newcommand{\theresearchpublications}{#1}}
+
+\newcommand{\theresearchpublications}{\@iflfe{\theresearchpublications@en}{\theresearchpublications@ru}}
+\newcommand{\researchpublications}[1]{\@iflfe{\newcommand{\theresearchpublications@en}{#1}}{\newcommand{\theresearchpublications@ru}{#1}}}
 
 %% Контентные команды пополнения списков
 
 %%% Добавить консультанта: (Фамилия И.О.) (звание, степень)
-\newbool{hasconsultants}
-\newcommand{\thelistofconsultants}{}
-\newcommand{\addconsultant}[2]{\booltrue{hasconsultants}\appto{\thelistofconsultants}{\item #1, #2 \hfill\signatureplace\par\bigskip}}
+\newbool{hasconsultants@en}
+\newbool{hasconsultants@ru}
+\newcommand{\thelistofconsultants@en}{}
+\newcommand{\thelistofconsultants@ru}{}
+\newcommand{\addconsultant}[2]{\@iflfe{\booltrue{hasconsultants@en}\appto{\thelistofconsultants@en}{\item #1, #2 \hfill\signatureplace\par\bigskip}}
+                                      {\booltrue{hasconsultants@ru}\appto{\thelistofconsultants@ru}{\item #1, #2 \hfill\signatureplace\par\bigskip}}}
+\newcommand{\displayconsultants}{\@iflfe{\ifbool{hasconsultants@en}{\noindent Consultant(s): \begin{enumerate}\thelistofconsultants@en\end{enumerate}\par}{}}
+                                        {\ifbool{hasconsultants@ru}{\noindent Консультанты:  \begin{enumerate}\thelistofconsultants@ru\end{enumerate}\par}{}}}
 
 %%% Добавить пакет программ: (Название) (Ссылки на разделы)
-\newbool{hasadvancedsoftware}
-\newcommand{\thelistofadvancedsoftware}{}
-\newcommand{\addadvancedsoftware}[2]{\booltrue{hasadvancedsoftware}\appto{\thelistofadvancedsoftware}{#1 & #2 \\\hline}}
+\newbool{hasadvancedsoftware@en}
+\newbool{hasadvancedsoftware@ru}
+\newcommand{\thelistofadvancedsoftware@en}{}
+\newcommand{\thelistofadvancedsoftware@ru}{}
+\newcommand{\addadvancedsoftware}[2]{\@iflfe{\booltrue{hasadvancedsoftware@en}\appto{\thelistofadvancedsoftware@en}{#1 & #2 \\\hline}}
+                                            {\booltrue{hasadvancedsoftware@ru}\appto{\thelistofadvancedsoftware@ru}{#1 & #2 \\\hline}}}
+
+\newcommand{\displayadvancedsoftware@ru}{\ifbool{hasadvancedsoftware@ru}
+{\par\vspace{3pt}\noindent\begin{tabularx}{\textwidth}{|X|p{0.25\textwidth}|}\hline
+ \multicolumn{1}{|c|}{\textbf{Пакеты компьютерных программ и технологий}} & \multicolumn{1}{c|}{\textbf{Раздел работы}} \\\hline
+ \thelistofadvancedsoftware@ru
+\end{tabularx}\par\vspace{6pt}}{нет\par}}
+
+\newcommand{\displayadvancedsoftware@en}{\ifbool{hasadvancedsoftware@en}
+{\par\vspace{3pt}\noindent\begin{tabularx}{\textwidth}{|X|p{0.25\textwidth}|}\hline
+ \multicolumn{1}{|c|}{\textbf{Software suites and technologies}} & \multicolumn{1}{c|}{\textbf{Thesis section}} \\\hline
+ \thelistofadvancedsoftware@en
+\end{tabularx}\par\vspace{6pt}}{none\par}}
+
+\newcommand{\displayadvancedsoftware}{\@iflfe{\displayadvancedsoftware@en}{\displayadvancedsoftware@ru}}
+
+\newcommand{\displaysourcepartition@ru}{\begin{tabularx}{\textwidth}{|*{6}{>{\centering\arraybackslash}X|}}\hline
+  \multicolumn{3}{|c|}{\textbf{Отечественных}} & \multicolumn{3}{c|}{\textbf{Иностранных}} \\\hline
+  Последние & От 5      & Более  & Последние & От 5 & Более \\
+  5 лет     & до 10 лет & 10 лет & 5 лет     & до 10 лет & 10 лет \\\hline
+  \russiansourcesfiveyears & \russiansourcestenyears & \russiansourcesveryold &
+  \foreignsourcesfiveyears & \foreignsourcestenyears & \foreignsourcesveryold \\\hline
+\end{tabularx}}
+
+\newcommand{\displaysourcepartition@en}{\begin{tabularx}{\textwidth}{|*{6}{>{\centering\arraybackslash}X|}}\hline
+  \multicolumn{3}{|c|}{\textbf{Russian}} & \multicolumn{3}{c|}{\textbf{Foreign}} \\\hline
+  In the last & 5 to 10 & More than  & In the last & 5 to 10 & More than \\
+  5 years     & years   & 10 years   & 5 years     & years   & 10 years  \\\hline
+  \russiansourcesfiveyears & \russiansourcestenyears & \russiansourcesveryold &
+  \foreignsourcesfiveyears & \foreignsourcestenyears & \foreignsourcesveryold \\\hline
+\end{tabularx}}
+
+\newcommand{\displaysourcepartition}{\@iflfe{\displaysourcepartition@en}{\displaysourcepartition@ru}}
 
 %% Создание титульной страницы, задания и аннотации
+
+\newcommand{\@strings@ThesisName@en}{Graduation Thesis}
+\newcommand{\@strings@ThesisName@ru}{Выпускная квалификационная работа}
+\newcommand{\@strings@ThesisName}{\@iflfe{\@strings@ThesisName@en}{\@strings@ThesisName@ru}}
+
+\newcommand{\@strings@ThesisTitle@en}{Title of thesis}
+\newcommand{\@strings@ThesisTitle@ru}{Наименование темы}
+\newcommand{\@strings@ThesisTitle}{\@iflfe{\@strings@ThesisTitle@en}{\@strings@ThesisTitle@ru}}
+
+\newcommand{\@strings@ThesisTitleLong@en}{Title of the thesis}
+\newcommand{\@strings@ThesisTitleLong@ru}{Наименование темы ВКР}
+\newcommand{\@strings@ThesisTitleLong}{\@iflfe{\@strings@ThesisTitleLong@en}{\@strings@ThesisTitleLong@ru}}
+
+\newcommand{\@strings@Author@en}{Author}
+\newcommand{\@strings@Author@ru}{Автор}
+\newcommand{\@strings@Author}{\@iflfe{\@strings@Author@en}{\@strings@Author@ru}}
+
+\newcommand{\@strings@SubjectArea@en}{Subject area}
+\newcommand{\@strings@SubjectArea@ru}{Направление подготовки}
+\newcommand{\@strings@SubjectArea}{\@iflfe{\@strings@SubjectArea@en}{\@strings@SubjectArea@ru}}
+
+\newcommand{\@strings@SubjectAreaBig@en}{Subject area}
+\newcommand{\@strings@SubjectAreaBig@ru}{Направление подготовки (специальность)}
+\newcommand{\@strings@SubjectAreaBig}{\@iflfe{\@strings@SubjectAreaBig@en}{\@strings@SubjectAreaBig@ru}}
+
+\newcommand{\@strings@ProgramMajor@en}{Program/Major}
+\newcommand{\@strings@ProgramMajor@ru}{Направленность (профиль)}
+\newcommand{\@strings@ProgramMajor}{\@iflfe{\@strings@ProgramMajor@en}{\@strings@ProgramMajor@ru}}
+
+\newcommand{\@strings@DegreeLevel@en}{Degree level}
+\newcommand{\@strings@DegreeLevel@ru}{Квалификация}
+\newcommand{\@strings@DegreeLevel}{\@iflfe{\@strings@DegreeLevel@en}{\@strings@DegreeLevel@ru}}
+
+\newcommand{\@strings@DegreeName}{\@iflfe{\@strings@DegreeName@en}{\@strings@DegreeName@ru}}
+
+\newcommand{\@strings@ThesisSupervisor@en}{Thesis supervisor}
+\newcommand{\@strings@ThesisSupervisor@ru}{Руководитель}
+\newcommand{\@strings@ThesisSupervisor}{\@iflfe{\@strings@ThesisSupervisor@en}{\@strings@ThesisSupervisor@ru}}
+
+\newcommand{\@strings@ThesisSupervisorLong@en}{Thesis supervisor}
+\newcommand{\@strings@ThesisSupervisorLong@ru}{Руководитель ВКР}
+\newcommand{\@strings@ThesisSupervisorLong}{\@iflfe{\@strings@ThesisSupervisorLong@en}{\@strings@ThesisSupervisorLong@ru}}
+
+\newcommand{\@strings@APPROVED@en}{APPROVED}
+\newcommand{\@strings@APPROVED@ru}{УТВЕРЖДАЮ}
+\newcommand{\@strings@APPROVED}{\@iflfe{\@strings@APPROVED@en}{\@strings@APPROVED@ru}}
+
+\newcommand{\@strings@ApprovedForDefense@en}{Approved for defense}
+\newcommand{\@strings@ApprovedForDefense@ru}{К защите допустить}
+\newcommand{\@strings@ApprovedForDefense}{\@iflfe{\@strings@ApprovedForDefense@en}{\@strings@ApprovedForDefense@ru}}
+
+\newcommand{\@strings@HeadOfProgram@en}{Head of educational program}
+\newcommand{\@strings@HeadOfProgram@ru}{Руководитель ОП}
+\newcommand{\@strings@HeadOfProgram}{\@iflfe{\@strings@HeadOfProgram@en}{\@strings@HeadOfProgram@ru}}
+
+\newcommand{\@strings@yearend@en}{}
+\newcommand{\@strings@yearend@ru}{~г.}
+\newcommand{\@strings@yearend}{\@iflfe{\@strings@yearend@en}{\@strings@yearend@ru}}
+
+\newcommand{\@strings@Student@en}{Student}
+\newcommand{\@strings@Student@ru}{Студент}
+\newcommand{\@strings@Student}{\@iflfe{\@strings@Student@en}{\@strings@Student@ru}}
+
+\newcommand{\@strings@Group@en}{Group}
+\newcommand{\@strings@Group@ru}{Группа}
+\newcommand{\@strings@Group}{\@iflfe{\@strings@Group@en}{\@strings@Group@ru}}
+
+\newcommand{\@strings@FacultyOf@en}{Faculty of}
+\newcommand{\@strings@FacultyOf@ru}{Факультет}
+\newcommand{\@strings@FacultyOf}{\@iflfe{\@strings@FacultyOf@en}{\@strings@FacultyOf@ru}}
+
+\newcommand{\@strings@SubjectAreaProgramMajor@en}{Subject area, program/major}
+\newcommand{\@strings@SubjectAreaProgramMajor@ru}{Направленность (профиль), специализация}
+\newcommand{\@strings@SubjectAreaProgramMajor}{\@iflfe{\@strings@SubjectAreaProgramMajor@en}{\@strings@SubjectAreaProgramMajor@ru}}
+
+\newcommand{\@strings@ThesisReceived@en}{Thesis received}
+\newcommand{\@strings@ThesisReceived@ru}{ВКР принята}
+\newcommand{\@strings@ThesisReceived}{\@iflfe{\@strings@ThesisReceived@en}{\@strings@ThesisReceived@ru}}
+
+\newcommand{\@strings@OriginalityOfThesis@en}{Originality of thesis}
+\newcommand{\@strings@OriginalityOfThesis@ru}{Оригинальность ВКР}
+\newcommand{\@strings@OriginalityOfThesis}{\@iflfe{\@strings@OriginalityOfThesis@en}{\@strings@OriginalityOfThesis@ru}}
+
+\newcommand{\@strings@ThesisCompletedWithGrade@en}{Thesis completed with grade}
+\newcommand{\@strings@ThesisCompletedWithGrade@ru}{ВКР выполнена с оценкой}
+\newcommand{\@strings@ThesisCompletedWithGrade}{\@iflfe{\@strings@ThesisCompletedWithGrade@en}{\@strings@ThesisCompletedWithGrade@ru}}
+
+\newcommand{\@strings@DateOfDefense@en}{Date of defense}
+\newcommand{\@strings@DateOfDefense@ru}{Дата защиты}
+\newcommand{\@strings@DateOfDefense}{\@iflfe{\@strings@DateOfDefense@en}{\@strings@DateOfDefense@ru}}
+
+\newcommand{\@strings@SecretaryOfCommission@en}{Secretary of State Exam Commission}
+\newcommand{\@strings@SecretaryOfCommission@ru}{Секретарь ГЭК}
+\newcommand{\@strings@SecretaryOfCommission}{\@iflfe{\@strings@SecretaryOfCommission@en}{\@strings@SecretaryOfCommission@ru}}
+
+\newcommand{\@strings@NumberOfPages@en}{Number of pages}
+\newcommand{\@strings@NumberOfPages@ru}{Листов хранения}
+\newcommand{\@strings@NumberOfPages}{\@iflfe{\@strings@NumberOfPages@en}{\@strings@NumberOfPages@ru}}
+
+\newcommand{\@strings@NumberOfSupplementary@en}{Number of supplementary materials/Blueprints}
+\newcommand{\@strings@NumberOfSupplementary@ru}{Демонстрационных материалов/Чертежей хранения}
+\newcommand{\@strings@NumberOfSupplementary}{\@iflfe{\@strings@NumberOfSupplementary@en}{\@strings@NumberOfSupplementary@ru}}
+
+\newcommand{\@strings@OBJECTIVES@first@en}{OBJECTIVES}
+\newcommand{\@strings@OBJECTIVES@first@ru}{ЗАДАНИЕ}
+\newcommand{\@strings@OBJECTIVES@first}{\@iflfe{\@strings@OBJECTIVES@first@en}{\@strings@OBJECTIVES@first@ru}}
+
+\newcommand{\@strings@OBJECTIVES@second@en}{FOR A GRADUATION THESIS}
+\newcommand{\@strings@OBJECTIVES@second@ru}{НА ВЫПУСКНУЮ КВАЛИФИКАЦИОННУЮ РАБОТУ}
+\newcommand{\@strings@OBJECTIVES@second}{\@iflfe{\@strings@OBJECTIVES@second@en}{\@strings@OBJECTIVES@second@ru}}
+
+\newcommand{\@strings@DeadlineForSubmission@en}{Deadline for submission of complete thesis}
+\newcommand{\@strings@DeadlineForSubmission@ru}{Срок сдачи студентом законченной работы}
+\newcommand{\@strings@DeadlineForSubmission}{\@iflfe{\@strings@DeadlineForSubmission@en}{\@strings@DeadlineForSubmission@ru}}
+
+\newcommand{\@strings@RequirementsAndPremise@en}{Requirements and premise for the thesis}
+\newcommand{\@strings@RequirementsAndPremise@ru}{Техническое задание и исходные данные к работе}
+\newcommand{\@strings@RequirementsAndPremise}{\@iflfe{\@strings@RequirementsAndPremise@en}{\@strings@RequirementsAndPremise@ru}}
+
+\newcommand{\@strings@ContentOfTheThesis@en}{Content of the thesis (list of key issues)}
+\newcommand{\@strings@ContentOfTheThesis@ru}{Содержание выпускной работы (перечень подлежащих разработке вопросов)}
+\newcommand{\@strings@ContentOfTheThesis}{\@iflfe{\@strings@ContentOfTheThesis@en}{\@strings@ContentOfTheThesis@ru}}
+
+\newcommand{\@strings@ListOfGraphic@en}{List of graphic materials (with a list of required materials)}
+\newcommand{\@strings@ListOfGraphic@ru}{Перечень графического материала (с указанием обязательного материала)}
+\newcommand{\@strings@ListOfGraphic}{\@iflfe{\@strings@ListOfGraphic@en}{\@strings@ListOfGraphic@ru}}
+
+\newcommand{\@strings@SourceMaterials@en}{Source materials and publications}
+\newcommand{\@strings@SourceMaterials@ru}{Исходные материалы и пособия}
+\newcommand{\@strings@SourceMaterials}{\@iflfe{\@strings@SourceMaterials@en}{\@strings@SourceMaterials@ru}}
+
+\newcommand{\@strings@ObjectivesIssuedOn@en}{Objectives issued on}
+\newcommand{\@strings@ObjectivesIssuedOn@ru}{Дата выдачи задания}
+\newcommand{\@strings@ObjectivesIssuedOn}{\@iflfe{\@strings@ObjectivesIssuedOn@en}{\@strings@ObjectivesIssuedOn@ru}}
+
+\newcommand{\@strings@ObjectivesAssumed@en}{Objectives assumed by}
+\newcommand{\@strings@ObjectivesAssumed@ru}{Задание принял к исполнению}
+\newcommand{\@strings@ObjectivesAssumed}{\@iflfe{\@strings@ObjectivesAssumed@en}{\@strings@ObjectivesAssumed@ru}}
+
+\newcommand{\@strings@ANNOTATION@first@en}{SUMMARY}
+\newcommand{\@strings@ANNOTATION@first@ru}{АННОТАЦИЯ}
+\newcommand{\@strings@ANNOTATION@first}{\@iflfe{\@strings@ANNOTATION@first@en}{\@strings@ANNOTATION@first@ru}}
+
+\newcommand{\@strings@ANNOTATION@second@en}{OF A GRADUATION THESIS}
+\newcommand{\@strings@ANNOTATION@second@ru}{ВЫПУСКНОЙ КВАЛИФИКАЦИОННОЙ РАБОТЫ}
+\newcommand{\@strings@ANNOTATION@second}{\@iflfe{\@strings@ANNOTATION@second@en}{\@strings@ANNOTATION@second@ru}}
+
+\newcommand{\@strings@NameOfOrganization@en}{Name of organization}
+\newcommand{\@strings@NameOfOrganization@ru}{Наименование организации, в которой выполнена ВКР}
+\newcommand{\@strings@NameOfOrganization}{\@iflfe{\@strings@NameOfOrganization@en}{\@strings@NameOfOrganization@ru}}
+
+\newcommand{\@strings@DescriptionOfThesis@en}{DESCRIPTION OF THE GRADUATION THESIS}
+\newcommand{\@strings@DescriptionOfThesis@ru}{ХАРАКТЕРИСТИКА ВЫПУСКНОЙ КВАЛИФИКАЦИОННОЙ РАБОТЫ}
+\newcommand{\@strings@DescriptionOfThesis}{\@iflfe{\@strings@DescriptionOfThesis@en}{\@strings@DescriptionOfThesis@ru}}
+
+\newcommand{\@strings@ResearchObjective@en}{Research objective}
+\newcommand{\@strings@ResearchObjective@ru}{Цель исследования}
+\newcommand{\@strings@ResearchObjective}{\@iflfe{\@strings@ResearchObjective@en}{\@strings@ResearchObjective@ru}}
+
+\newcommand{\@strings@ResearchTasks@en}{Research tasks}
+\newcommand{\@strings@ResearchTasks@ru}{Задачи, решаемые в ВКР}
+\newcommand{\@strings@ResearchTasks}{\@iflfe{\@strings@ResearchTasks@en}{\@strings@ResearchTasks@ru}}
+
+\newcommand{\@strings@SourcesReview@en}{Number of sources listed in the review section}
+\newcommand{\@strings@SourcesReview@ru}{Число источников, использованных при составлении обзора}
+\newcommand{\@strings@SourcesReview}{\@iflfe{\@strings@SourcesReview@en}{\@strings@SourcesReview@ru}}
+
+\newcommand{\@strings@SourcesTotal@en}{Total number of sources used in the thesis}
+\newcommand{\@strings@SourcesTotal@ru}{Полное число источников, использованных в работе}
+\newcommand{\@strings@SourcesTotal}{\@iflfe{\@strings@SourcesTotal@en}{\@strings@SourcesTotal@ru}}
+
+\newcommand{\@strings@SourcesByYear@ru}{В том числе источников по годам}
+\newcommand{\@strings@SourcesByYear@en}{Sources by years}
+\newcommand{\@strings@SourcesByYear}{\@iflfe{\@strings@SourcesByYear@en}{\@strings@SourcesByYear@ru}}
+
+\newcommand{\@strings@OnlineResources@en}{Use of online (internet) resources}
+\newcommand{\@strings@OnlineResources@ru}{Использование информационных ресурсов Internet}
+\newcommand{\@strings@OnlineResources}{\@iflfe{\@strings@OnlineResources@en}{\@strings@OnlineResources@ru}}
+
+\newcommand{\@strings@UseOfSoftware@en}{Use of modern computer software suites and technologies}
+\newcommand{\@strings@UseOfSoftware@ru}{Использование современных пакетов компьютерных программ и технологий}
+\newcommand{\@strings@UseOfSoftware}{\@iflfe{\@strings@UseOfSoftware@en}{\@strings@UseOfSoftware@ru}}
+
+\newcommand{\@strings@ShortSummary@en}{Short summary of results/conclusions}
+\newcommand{\@strings@ShortSummary@ru}{Краткая характеристика полученных результатов}
+\newcommand{\@strings@ShortSummary}{\@iflfe{\@strings@ShortSummary@en}{\@strings@ShortSummary@ru}}
+
+\newcommand{\@strings@GrantsReceived@en}{Grants received while working on the thesis}
+\newcommand{\@strings@GrantsReceived@ru}{Гранты, полученные при выполнении работы}
+\newcommand{\@strings@GrantsReceived}{\@iflfe{\@strings@GrantsReceived@en}{\@strings@GrantsReceived@ru}}
+
+\newcommand{\@strings@ThesisPublications@en}{Have you produced any publications or conference reports on the topic of the thesis?}
+\newcommand{\@strings@ThesisPublications@ru}{Наличие публикаций и выступлений на конференциях по теме работы}
+\newcommand{\@strings@ThesisPublications}{\@iflfe{\@strings@ThesisPublications@en}{\@strings@ThesisPublications@ru}}
+
+%%% Локализуемый шаблон титульной страницы
+\newcommand{\typeoutTitlePage}{\begin{titlepage}
+    \banhyphens
+    \begin{center}\theuniversity\end{center}
+    \vspace{0cm plus 0.66fill minus 0cm}
+    {\centering\bfseries\MakeUppercase{\@strings@ThesisName}\par}
+    \vspace{0cm plus 0.66fill minus 0cm}
+    {\centering\MakeUppercase{\thetitle}\par}
+    \vspace{0cm plus 1fill minus 0cm}
+    {\setlength{\tabcolsep}{3pt}\renewcommand{\arraystretch}{1.5}
+    \noindent\begin{tabularx}{\textwidth}{Xl}
+    & \@strings@Author: \theauthor \hfilll \signatureplace \\
+    & \@strings@SubjectArea:\;
+       \begin{minipage}[t]{0.4\textwidth}\begin{flushleft}\thespecialty\end{flushleft}\end{minipage} \\
+    & \@strings@DegreeLevel: \@strings@DegreeName \\
+    & \@strings@ThesisSupervisor: \thesupervisorshort, \thesupervisordegree~ \hfilll \signatureplace \\
+    & \textbf{\@strings@ApprovedForDefense} \\
+    & \@strings@HeadOfProgram\ \theprogramhead, \theprogramheaddegree~ \hfilll \signatureplace \\
+    \end{tabularx}\par}
+    \begin{flushright}\unknowndate\end{flushright}
+    \vspace{0cm plus 1fill minus 0cm}
+    \begin{center}\thecity, \theyear\@strings@yearend\end{center}
+\end{titlepage}\begin{titlepage}
+    \banhyphens
+    \noindent\@strings@Student~\theauthorshort\;\hfilll \@strings@Group~\thestudygroup\; \@strings@FacultyOf~\thefaculty\par\bigskip\par
+    \noindent\@strings@SubjectAreaProgramMajor\par
+    \noindent\thespecialization \par\bigskip\par
+    \displayconsultants\bigskip\par\bigskip\par
+    \noindent\@strings@ThesisReceived~\unknowndate\par\bigskip\par
+    \noindent\@strings@OriginalityOfThesis~\uhspace{5ex}\%\par\bigskip\par
+    \noindent\@strings@ThesisCompletedWithGrade~\infiniteuhspace\par\bigskip\par
+    \noindent\@strings@DateOfDefense~\unknowndate\par\bigskip\par
+    \noindent\@strings@SecretaryOfCommission~\thesecretary\hfill\signatureplace\par\bigskip\par
+    \noindent\@strings@NumberOfPages~\infiniteuhspace\par\bigskip\par
+    \noindent\@strings@NumberOfSupplementary~\infiniteuhspace\par\bigskip\par
+\end{titlepage}}
+
+%%% Локализуемый шаблон задания
+\newcommand{\typeoutSpecification}{\begin{titlepage}
+\begin{center}\theuniversity\end{center}
+\begin{small}
+    \noindent\begin{tabularx}{\textwidth}{Xl}
+        & \hfilll \textbf{\@strings@APPROVED} \hfilll\ \\
+        & \@strings@HeadOfProgram\\
+        & \theprogramheaddegree\ \theprogramhead\ \signatureplace \\
+        & \unknowndate \\
+    \end{tabularx}
+    \bigskip
+    \begin{center}\bfseries{\normalsize\@strings@OBJECTIVES@first}\\\@strings@OBJECTIVES@second\end{center}
+    \bigskip
+    \begingroup\banhyphens
+    \noindent \textbf{\@strings@Student}~\theauthorshort\;\hfilll \textbf{\@strings@Group}~\thestudygroup\; \textbf{\@strings@FacultyOf}~\thefaculty\;\par
+    \noindent \textbf{\@strings@ThesisSupervisor}~\thesupervisorshort, \thesupervisordegree, \thesupervisorwork\par
+    \noindent \textbf{1~\@strings@ThesisTitle:} \thetitle\par
+    \noindent \textbf{\@strings@SubjectAreaBig:} \thespecialty\par
+    \noindent \textbf{\@strings@ProgramMajor:} \thespecialization\par
+    \noindent \textbf{\@strings@DegreeLevel:} \@strings@DegreeName\par
+    \endgroup
+    \noindent \textbf{2~\@strings@DeadlineForSubmission:}     \thefinishdate     \par
+    \noindent \textbf{3~\@strings@RequirementsAndPremise}\par \thetechnicalspec  \par\pagebreak[3]
+    \noindent \textbf{4~\@strings@ContentOfTheThesis}    \par \theplannedcontents\par\pagebreak[3]
+    \noindent \textbf{5~\@strings@ListOfGraphic}         \par \theplannedgraphics\par\pagebreak[3]
+    \filbreak
+    \noindent \textbf{6~\@strings@SourceMaterials}       \par \theplannedsources \par\pagebreak[3]
+    \noindent \textbf{7~\@strings@ObjectivesIssuedOn}         \thestartdate      \par\bigskip\par
+    \noindent\begingroup\renewcommand{\arraystretch}{1.5}\begin{tabular}{ll}
+        \@strings@ThesisSupervisorLong & \signatureplace \\
+        \@strings@ObjectivesAssumed    & \signatureplace \\
+        & \thestartdate
+    \end{tabular}\endgroup
+\end{small}
+\end{titlepage}}
+
+%%% Локализуемый шаблон аннотации
+\newcommand{\typeoutAnnotation}{\begin{titlepage}
+    \begin{center}\theuniversity\end{center}
+    {\centering\bfseries\@strings@ANNOTATION@first\par}
+    \begin{small}
+    {\centering\bfseries\@strings@ANNOTATION@second\par}
+    \bigskip
+    \noindent\textbf{\@strings@Student:} \theauthor\par
+    \noindent\textbf{\@strings@ThesisTitleLong:} \thetitle\par
+    \noindent\textbf{\@strings@NameOfOrganization:} \thedegreehost\par
+    \bigskip
+    {\centering\bfseries\@strings@DescriptionOfThesis\par}
+    \bigskip
+    \noindent1~\@strings@ResearchObjective: \theresearchaim\par\pagebreak[3]
+    \noindent2~\@strings@ResearchTasks: \theresearchtargets\par\pagebreak[3]
+    \noindent3~\@strings@SourcesReview: \relatedworksourcecount\par
+    \noindent4~\@strings@SourcesTotal: \total{citnum}\par
+    \noindent5~\@strings@SourcesByYear: \par\vspace{3pt}
+    \noindent\displaysourcepartition\par\vspace{6pt}
+    \noindent6~\@strings@OnlineResources: \internetsources\par\pagebreak[3]
+    \noindent7~\@strings@UseOfSoftware: \displayadvancedsoftware\pagebreak[3]
+    \noindent8~\@strings@ShortSummary\par\theresearchsummary\par\pagebreak[3]\vspace{1ex minus 1ex}
+    \noindent9~\@strings@GrantsReceived\par\theresearchfunding\par\pagebreak[3]\vspace{1ex minus 1ex}
+    \noindent10~\@strings@ThesisPublications\par\theresearchpublications\par\bigskip
+    \noindent\begingroup\renewcommand{\arraystretch}{1.5}\begin{tabular}{lll}
+        \@strings@Student & \theauthorshort & \signatureplace \\
+        \@strings@ThesisSupervisor & \thesupervisorshort &  \signatureplace \\
+        \multicolumn{3}{l}{\unknowndate}
+    \end{tabular}\endgroup
+    \end{small}
+\end{titlepage}}
 
 %%% Параметр: Бакалавр/Магистр
 \renewcommand{\maketitle}[1]{
     \ifstrequal{#1}{Магистр}{
-        \providecommand{\thespecialization}{Технологии разработки программного обеспечения}
-        \providecommand{\thespecialty}{01.04.02~Прикладная математика и информатика}
+        \providecommand{\thespecialization@ru}{Технологии разработки программного обеспечения}
+        \providecommand{\thespecialty@ru}{01.04.02~Прикладная математика и информатика}
+        \providecommand{\thespecialization@en}{Technologies of software engineering}
+        \providecommand{\thespecialty@en}{01.04.02~Applied mathematics and informatics}
+        \providecommand{\@strings@DegreeName@ru}{Магистр}
+        \providecommand{\@strings@DegreeName@en}{Master}
     }{
         \ifstrequal{#1}{Бакалавр}{
-            \providecommand{\thespecialization}{Математические модели и алгоритмы в разработке программного обеспечения}
-            \providecommand{\thespecialty}{01.03.02~Прикладная математика и информатика}
+            \providecommand{\thespecialization@ru}{Математические модели и алгоритмы в разработке программного обеспечения}
+            \providecommand{\thespecialty@ru}{01.03.02~Прикладная математика и информатика}
+            \providecommand{\thespecialization@en}{Mathematical models and algorithms in software engineering}
+            \providecommand{\thespecialty@en}{01.03.02~Applied mathematics and informatics}
+            \providecommand{\@strings@DegreeName@ru}{Бакалавр}
+            \providecommand{\@strings@DegreeName@en}{Bachelor}
         }{
             \ClassError{Unknown maketitle argument: #1, expected Магистр or Бакалавр}
         }
     }
 
 	\pagenumbering{gobble}
-    \begin{titlepage}
-        \banhyphens
-        \begin{center}\theuniversity\end{center}
-        \vspace{0cm plus 0.66fill minus 0cm}
-        {\centering\bfseries\MakeUppercase{Выпускная квалификационная работа}\par}
-        \vspace{0cm plus 0.66fill minus 0cm}
-        {\centering\MakeUppercase{\thetitle}\par}
-        \vspace{0cm plus 1fill minus 0cm}
-        {\setlength{\tabcolsep}{3pt}\renewcommand{\arraystretch}{1.5}
-         \noindent\begin{tabularx}{\textwidth}{Xl}
-            & Автор: \theauthor \hfilll \signatureplace \\
-            & Направление подготовки:\;
-                \begin{minipage}[t]{0.4\textwidth}\begin{flushleft}\thespecialty\end{flushleft}\end{minipage} \\
-            & Квалификация: #1 \\
-            & Руководитель: \thesupervisorshort, \thesupervisordegree~ \hfilll \signatureplace \\
-            & \textbf{К защите допустить} \\
-            & Руководитель ОП \theprogramhead, \theprogramheaddegree~ \hfilll \signatureplace \\
-        \end{tabularx}\par}
-        \begin{flushright}\unknowndate\end{flushright}
-        \vspace{0cm plus 1fill minus 0cm}
-        \begin{center}\thecity, \theyear~г.\end{center}
-    \end{titlepage}
-    \begin{titlepage}
-        \banhyphens
-        \noindent Студент~\theauthorshort\;\hfilll Группа~\thestudygroup\; Факультет~\thefaculty\par\bigskip\par
-        \noindent Направленность (профиль), специализация\par
-        \noindent \thespecialization \par\bigskip\par
-        \ifbool{hasconsultants}{
-            \noindent Консультанты:
-            \begin{enumerate}\thelistofconsultants\end{enumerate}\par
-        }{}\bigskip\par\bigskip\par
-        \noindent ВКР принята \unknowndate\par\bigskip\par
-        \noindent Оригинальность ВКР \uhspace{5ex}\%\par\bigskip\par
-        \noindent ВКР выполнена с оценкой \infiniteuhspace\par\bigskip\par
-        \noindent Дата защиты \unknowndate\par\bigskip\par
-        \noindent Секретарь ГЭК~\thesecretary\hfill\signatureplace\par\bigskip\par
-        \noindent Листов хранения \infiniteuhspace\par\bigskip\par
-        \noindent Демонстрационных материалов/Чертежей хранения \infiniteuhspace\par\bigskip\par
-    \end{titlepage}
-    \if@shouldmakespecification
-    \begin{titlepage}
-    \begin{center}\theuniversity\end{center}
-    \begin{small}
-        \noindent\begin{tabularx}{\textwidth}{Xl}
-            & \hfilll \textbf{УТВЕРЖДАЮ} \hfilll\ \\
-            & Руководитель ОП \\
-            & \theprogramheaddegree\ \theprogramhead\ \signatureplace \\
-            & \unknowndate \\
-        \end{tabularx}
-        \bigskip
-        \begin{center}\bfseries {\normalsize ЗАДАНИЕ} \\ НА ВЫПУСКНУЮ КВАЛИФИКАЦИОННУЮ РАБОТУ\end{center}
-        \bigskip
-        \begingroup\banhyphens
-        \noindent \textbf{Студент}~\theauthorshort\;\hfilll \textbf{Группа}~\thestudygroup\; \textbf{Факультет}~\thefaculty\;\par
-        \noindent \textbf{Руководитель}~\thesupervisorshort, \thesupervisordegree, \thesupervisorwork\par
-        \noindent \textbf{1 Наименование темы:} \thetitle\par
-        \noindent \textbf{Направление подготовки (специальность):} \thespecialty\par
-        \noindent \textbf{Направленность (профиль):} \thespecialization\par
-        \noindent \textbf{Квалификация:} #1\par
-        \endgroup
-        \noindent \textbf{2 Срок сдачи студентом законченной работы:} \thefinishdate \par
-        \noindent \textbf{3 Техническое задание и исходные данные к работе}\par \thetechnicalspec\par
-        \pagebreak[3]
-        \noindent \textbf{4 Содержание выпускной работы (перечень подлежащих разработке вопросов)}\par \theplannedcontents\par
-        \pagebreak[3]
-        \noindent \textbf{5 Перечень графического материала (с указанием обязательного материала)}\par \theplannedgraphics\par
-        \pagebreak[3]
-        \filbreak
-        \noindent \textbf{6 Исходные материалы и пособия}\par \theplannedsources\par
-        \pagebreak[3]
-        \noindent \textbf{7 Дата выдачи задания} \thestartdate\par\bigskip\par
-        \noindent\begingroup\renewcommand{\arraystretch}{1.5}\begin{tabular}{ll}
-            Руководитель ВКР & \signatureplace \\
-            Задание принял к исполнению & \signatureplace \\
-            & \thestartdate
-        \end{tabular}\endgroup
-    \end{small}
-    \end{titlepage}
-    \fi
-    \if@shouldmakeannotation
-    \begin{titlepage}
-    \begin{center}\theuniversity\end{center}
-    {\centering\bfseries АННОТАЦИЯ \par}
-    \begin{small}
-        {\centering\bfseries ВЫПУСКНОЙ КВАЛИФИКАЦИОННОЙ РАБОТЫ \par}
-        \bigskip
-        \noindent \textbf{Студент:} \theauthor\par
-        \noindent \textbf{Наименование темы ВКР:} \thetitle\par
-        \noindent \textbf{Наименование организации, где выполнена ВКР:} \thedegreehost\par
-        \bigskip
-        {\centering\bfseries ХАРАКТЕРИСТИКА ВЫПУСКНОЙ КВАЛИФИКАЦИОННОЙ РАБОТЫ \par}
-        \bigskip
-        \noindent 1 Цель исследования: \theresearchaim \par
-        \pagebreak[3]
-        \noindent 2 Задачи, решаемые в ВКР: \theresearchtargets \par
-        \pagebreak[3]
-        \noindent 3 Число источников, использованных при составлении обзора: \relatedworksourcecount \par
-        \noindent 4 Полное число источников, использованных в работе: \total{citnum} \par
-        \noindent 5 В том числе источников по годам: \par\vspace{3pt}
-        \noindent\begin{tabularx}{\textwidth}{|*{6}{>{\centering\arraybackslash}X|}}\hline
-            \multicolumn{3}{|c|}{\textbf{Отечественных}} & \multicolumn{3}{c|}{\textbf{Иностранных}} \\\hline
-            Последние & От 5      & Более  & Последние & От 5 & Более \\
-            5 лет     & до 10 лет & 10 лет & 5 лет     & до 10 лет & 10 лет \\\hline
-            \russiansourcesfiveyears & \russiansourcestenyears & \russiansourcesveryold &
-            \foreignsourcesfiveyears & \foreignsourcestenyears & \foreignsourcesveryold \\\hline
-        \end{tabularx}\par\vspace{6pt}
-        \noindent 6 Использование информационных ресурсов Internet: \internetsources \par
-        \pagebreak[3]
-        \noindent 7 Использование современных пакетов компьютерных программ и технологий:
-        \ifbool{hasadvancedsoftware}{
-            \par\vspace{3pt}
-            \noindent\begin{tabularx}{\textwidth}{|X|p{0.25\textwidth}|}\hline
-                \multicolumn{1}{|c|}{\textbf{Пакеты компьютерных программ и технологий}} & \multicolumn{1}{c|}{\textbf{Раздел работы}} \\\hline
-                \thelistofadvancedsoftware
-            \end{tabularx}\par\vspace{6pt}
-        }{нет\par}
-        \pagebreak[3]
-        \noindent 8 Краткая характеристика полученных результатов\par\theresearchsummary\par
-        \pagebreak[3]\vspace{1ex minus 1ex}
-        \noindent 9 Гранты, полученные при выполнении работы\par\theresearchfunding\par
-        \pagebreak[3]\vspace{1ex minus 1ex}
-        \noindent 10 Наличие публикаций и выступлений на конференциях по теме работы\par\theresearchpublications\par
-        \bigskip
-        \noindent\begingroup\renewcommand{\arraystretch}{1.5}\begin{tabular}{lll}
-        Студент & \theauthorshort & \signatureplace \\
-        Руководитель & \thesupervisorshort &  \signatureplace \\
-        \multicolumn{3}{l}{\unknowndate}
-        \end{tabular}\endgroup
-    \end{small}
-    \end{titlepage}
-    \fi
+	\typeoutTitlePage
+    \if@shouldmaketitlepage@ru\begin{otherlanguage}{russian}\typeoutTitlePage\end{otherlanguage}\fi
+    \if@shouldmakespecification\typeoutSpecification\fi
+    \if@shouldmakespecification@ru\begin{otherlanguage}{russian}\typeoutSpecification\end{otherlanguage}\fi
+    \if@shouldmakeannotation\typeoutAnnotation\fi
+    \if@shouldmakeannotation@ru\begin{otherlanguage}{russian}\typeoutAnnotation\end{otherlanguage}\fi
     \pagenumbering{arabic}
 
     %% Ставим номер страницы сверху по центру
